@@ -1,12 +1,15 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
+import { ExpenseManagerComponent } from './components/expense-manager/expense-manager.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css'],
+  standalone: true,
+  imports: [CommonModule, HttpClientModule, ExpenseManagerComponent]
 })
 export class AppComponent {
-  title = 'gerenciador-gastos';
+  title = 'expense-manager';
 }

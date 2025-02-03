@@ -1,0 +1,35 @@
+<div class="container">
+  <h1 class="header">Gestão de Despesas</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Categoria</th>
+        <th>Descrição</th>
+        <th>Valor</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let category of getGroupedExpenseKeys()">
+        <tr>
+          <td colspan="3"><h3>{{ category }}</h3></td>
+        </tr>
+        <tr *ngFor="let expense of groupedExpenses[category]">
+          <td>{{ expense.nome }}</td>
+          <td>{{ expense.descricao }}</td>
+          <td>{{ expense.valor | currency }}</td>
+        </tr>
+        <tr>
+          <td colspan="2"><strong>Total {{ category }}</strong></td>
+          <td><strong>{{ totalByCategory[category] | currency }}</strong></td>
+        </tr>
+      </ng-container>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2"><strong>Total Geral</strong></td>
+        <td><strong>{{ grandTotal | currency }}</strong></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
