@@ -1,35 +1,83 @@
 <div class="container">
   <h1 class="header">Gestão de Despesas</h1>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Categoria</th>
-        <th>Descrição</th>
-        <th>Valor</th>
-      </tr>
-    </thead>
-    <tbody>
-      <ng-container *ngFor="let category of getGroupedExpenseKeys()">
-        <tr>
-          <td colspan="3"><h3>{{ category }}</h3></td>
-        </tr>
-        <tr *ngFor="let expense of groupedExpenses[category]">
-          <td>{{ expense.nome }}</td>
-          <td>{{ expense.descricao }}</td>
-          <td>{{ expense.valor | currency }}</td>
-        </tr>
-        <tr>
-          <td colspan="2"><strong>Total {{ category }}</strong></td>
-          <td><strong>{{ totalByCategory[category] | currency }}</strong></td>
-        </tr>
-      </ng-container>
-    </tbody>
-    <tfoot>
-      <tr>
-        <td colspan="2"><strong>Total Geral</strong></td>
-        <td><strong>{{ grandTotal | currency }}</strong></td>
-      </tr>
-    </tfoot>
-  </table>
+  <div class="content-wrapper">
+    <div class="main-content">
+      <label for="monthSelector">Selecione o mês:</label>
+      <input type="month" id="monthSelector" (change)="onMonthChange($event)" [value]="selectedYear + '-' + selectedMonth">
+
+      <table>
+        <thead>
+          <tr>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let category of getGroupedExpenseKeys()">
+            <tr>
+              <td colspan="4"><h3>{{ category }}</h3></td>
+            </tr>
+            <tr *ngFor="let expense of groupedExpenses[category]">
+              <td>{{ expense.nome }}</td>
+              <td>{{ expense.descricao }}</td>
+              <td>{{ expense.valor | currency }}</td>
+              <td><button class="edit-button" (click)="openEditModal(expense)">✏️</button></td>
+            </tr>
+            <tr>
+              <td colspan="3"><strong>Total {{ category }}</strong></td>
+              <td><strong>{{ totalByCategory[category] | currency }}</strong></td>
+            </tr>
+          </ng-container>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3"><strong>Total Geral</strong></td>
+            <td><strong>{{ grandTotal | currency }}</strong></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="info-box">
+      <h3>Informações Totais</h3>
+      <div *ngFor="let category of getGroupedExpenseKeys()">
+        <p><strong>{{ category }}:</strong> {{ totalByCategory[category] | currency }}</p>
+      </div>
+      <p class="total-geral"><strong>Total Geral:</strong> {{ grandTotal | currency }}</p>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="isEditModalOpen && selectedExpense" class="modal">
+    <div class="modal-content">
+      <span class="close" (click)="closeEditModal()">&times;</span>
+      <h2>Editar Gasto</h2>
+      <form (ngSubmit)="updateExpense()">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" [(ngModel)]="selectedExpense.nome" name="nome" required>
+
+        <label for="descricao">Descrição:</label>
+        <input type="text" id="descricao" [(ngModel)]="selectedExpense.descricao" name="descricao" required>
+
+        <label for="valor">Valor:</label>
+        <input type="number" id="valor" [(ngModel)]="selectedExpense.valor" name="valor" required>
+
+        <label for="grupoGastos">Grupo de Gastos:</label>
+        <select id="grupoGastos" [(ngModel)]="selectedExpense.grupoGastos" name="grupoGastos" required>
+          <option *ngFor="let grupo of gruposGastos" [value]="grupo.nome">{{ grupo.nome }}</option>
+        </select>
+
+        <label for="parcela">Parcela:</label>
+        <input type="text" id="parcela" [(ngModel)]="selectedExpense.parcela" name="parcela">
+
+        <label for="dataInicio">Data de Início:</label>
+        <input type="month" id="dataInicio" [(ngModel)]="selectedExpense.dataInicio" name="dataInicio" required>
+
+        <button type="submit">Salvar</button>
+      </form>
+    </div>
+  </div>
 </div>
