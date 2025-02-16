@@ -4,7 +4,8 @@
   <div class="content-wrapper">
     <div class="main-content">
       <label for="monthSelector">Selecione o mês:</label>
-      <input type="month" id="monthSelector" (change)="onMonthChange($event)" [value]="selectedYear + '-' + selectedMonth">
+      <input type="month" id="monthSelector" (change)="onMonthChange($event)"
+        [value]="selectedYear + '-' + selectedMonth">
 
       <table>
         <thead>
@@ -18,7 +19,9 @@
         <tbody>
           <ng-container *ngFor="let category of getGroupedExpenseKeys()">
             <tr>
-              <td colspan="4"><h3>{{ category }}</h3></td>
+              <td colspan="4">
+                <h3>{{ category }}</h3>
+              </td>
             </tr>
             <tr *ngFor="let expense of groupedExpenses[category]">
               <td>{{ expense.nome }}</td>
@@ -41,16 +44,22 @@
       </table>
     </div>
 
-    <div class="info-box">
-      <h3>Informações Totais</h3>
-      <div *ngFor="let category of getGroupedExpenseKeys()">
-        <p><strong>{{ category }}:</strong> {{ totalByCategory[category] | currency }}</p>
+    <div class="right-box">
+      <div class="buttons-new-group-and-expense">
+        <button class="btn-new-group-expense" (click)="openNewGroupExpenseModal()">Novo grupo</button>
+        <button class="btn-new-expense" (click)="openNewExpenseModal()">Novo gasto</button>
       </div>
-      <p class="total-geral"><strong>Total Geral:</strong> {{ grandTotal | currency }}</p>
+      <div class="info-box">
+        <h3>Informações Totais</h3>
+        <div *ngFor="let category of getGroupedExpenseKeys()">
+          <p><strong>{{ category }}:</strong> {{ totalByCategory[category] | currency }}</p>
+        </div>
+        <p class="total-geral"><strong>Total Geral:</strong> {{ grandTotal | currency }}</p>
+      </div>
     </div>
   </div>
 
-  <!-- Modal -->
+  <!-- Edit Modal -->
   <div *ngIf="isEditModalOpen && selectedExpense" class="modal">
     <div class="modal-content">
       <span class="close" (click)="closeEditModal()">&times;</span>
@@ -67,7 +76,7 @@
 
         <label for="grupoGastos">Grupo de Gastos:</label>
         <select id="grupoGastos" [(ngModel)]="selectedExpense.grupoGastos" name="grupoGastos" required>
-          <option *ngFor="let grupo of gruposGastos" [value]="grupo.nome">{{ grupo.nome }}</option>
+          <option *ngFor="let grupo of gruposGastos" [ngValue]="grupo">{{ grupo.nome }}</option>
         </select>
 
         <label for="parcela">Parcela:</label>
@@ -78,6 +87,70 @@
 
         <button type="submit">Salvar</button>
       </form>
+    </div>
+  </div>
+
+  <!-- New Expense Modal -->
+  <div *ngIf="isNewExpenseModalOpen" class="modal">
+    <div class="modal-content">
+      <span class="close" (click)="closeNewExpenseModal()">&times;</span>
+      <h2>Cadastrar Gasto</h2>
+      <form (ngSubmit)="addNewExpense()">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" [(ngModel)]="newExpense.nome" name="nome" required>
+
+        <label for="descricao">Descrição:</label>
+        <input type="text" id="descricao" [(ngModel)]="newExpense.descricao" name="descricao" required>
+
+        <label for="valor">Valor:</label>
+        <input type="number" id="valor" [(ngModel)]="newExpense.valor" name="valor" required>
+
+        <label for="grupoGastos">Grupo de Gastos:</label>
+        <select id="grupoGastos" [(ngModel)]="newExpense.grupoGastos" name="grupoGastos" required>
+          <option *ngFor="let grupo of gruposGastos" [ngValue]="grupo">{{ grupo.nome }}</option>
+        </select>
+
+        <label for="parcela">Parcela:</label>
+        <input type="text" id="parcela" [(ngModel)]="newExpense.parcela" name="parcela">
+
+        <label for="dataInicio">Data de Início:</label>
+        <input type="month" id="dataInicio" [(ngModel)]="newExpense.dataInicio" name="dataInicio" required>
+
+        <button type="submit">Salvar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- New Group Expense Modal -->
+  <div *ngIf="isNewGroupExpenseModalOpen" class="modal">
+    <div class="modal-content">
+      <span class="close" (click)="closeNewGroupExpenseModal()">&times;</span>
+      <h2>Cadastrar Grupo Gasto</h2>
+      <form (ngSubmit)="addNewGroupExpense()">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" [(ngModel)]="newGroupExpense.nome" name="nome" required>
+
+        <button type="submit">Salvar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Cadastro ok modal -->
+  <div *ngIf="isSuccessModalOpen" class="modal">
+    <div class="modal-content">
+      <span class="close" (click)="closeSuccessModal()">&times;</span>
+      <h2>{{ successMessage }}</h2>
+      <button class="btn-close-ok" (click)="closeSuccessModal()">OK</button>
+    </div>
+  </div>
+
+  <!-- Error Modal -->
+  <div *ngIf="isErrorModalOpen" class="modal">
+    <div class="modal-content">
+      <span class="close" (click)="closeErrorModal()">&times;</span>
+      <h2>Erro</h2>
+      <p>{{ errorMessage }}</p>
+      <button class="btn-close-ok" (click)="closeErrorModal()">OK</button>
     </div>
   </div>
 </div>

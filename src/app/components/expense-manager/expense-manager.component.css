@@ -183,3 +183,16 @@ button.edit-button {
 button.edit-button:hover {
   background-color: #333;
 }
+
+.buttons-new-group-and-expense {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-new-expense, .btn-new-group-expense {
+  display: flex;
+  justify-content: center;
+  width: 48%;
+  margin-bottom: 5%;
+}

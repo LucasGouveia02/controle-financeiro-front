@@ -10,7 +10,7 @@ interface Expense {
   nome: string;
   descricao: string;
   valor: number;
-  grupoGastos: string;
+  grupoGastos: GrupoGastos;
   parcela: string | null;
   dataInicio: string;
 }
@@ -21,6 +21,11 @@ interface GroupedExpenses {
 
 interface TotalByCategory {
   [grupoGastos: string]: number;
+}
+
+interface GrupoGastos {
+  id: number;
+  nome: string;
 }
 
 @Component({
@@ -38,10 +43,18 @@ export class ExpenseManagerComponent implements OnInit {
   selectedMonth: string = '';
   selectedYear: number = 0;
   isEditModalOpen: boolean = false;
+  isNewExpenseModalOpen: boolean = false;
+  isNewGroupExpenseModalOpen: boolean = false;
+  isSuccessModalOpen: boolean = false;
+  isErrorModalOpen: boolean = false;
+  newExpense: Expense = { id: 0, nome: '', descricao: '', valor: 0, grupoGastos: {id : 0, nome: ''}, parcela: null, dataInicio: '' };
+  newGroupExpense: GrupoGastos = { id: 0, nome: '' };
+  errorMessage: string = '';
+  successMessage: string = '';
   selectedExpense: Expense | null = null;
   gruposGastos: { id: number, nome: string }[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   ngOnInit() {
     const currentDate = new Date();
@@ -86,13 +99,14 @@ export class ExpenseManagerComponent implements OnInit {
 
   groupExpenses() {
     this.groupedExpenses = this.expenses.reduce((acc: GroupedExpenses, expense: Expense) => {
-      if (!acc[expense.grupoGastos]) {
-        acc[expense.grupoGastos] = [];
+      const groupName = expense.grupoGastos.nome;
+      if (!acc[groupName]) {
+        acc[groupName] = [];
       }
-      acc[expense.grupoGastos].push(expense);
+      acc[groupName].push(expense);
       return acc;
     }, {});
-
+  
     this.calculateTotals();
   }
 
@@ -114,6 +128,74 @@ export class ExpenseManagerComponent implements OnInit {
     this.fetchExpenses(this.selectedMonth, this.selectedYear);
   }
 
+
+  updateExpense() {
+    if (this.selectedExpense) {
+      const url = `http://localhost:8080/gastos/atualizar/${this.selectedExpense.id}`;
+      const expenseToUpdate = {
+        ...this.selectedExpense,
+        grupoGastosId: this.selectedExpense.grupoGastos.id
+      };
+      this.http.put(url, expenseToUpdate)
+        .pipe(
+          catchError(error => {
+            console.error('Error updating expense:', error);
+            this.errorMessage = error.error.message || 'Erro ao atualizar a despesa';
+            this.isErrorModalOpen = true;
+            return throwError(error);
+          })
+        )
+        .subscribe(() => {
+          this.fetchExpenses(this.selectedMonth, this.selectedYear);
+          this.successMessage = 'Despesa atualizada com sucesso';
+          this.isSuccessModalOpen = true;
+          this.closeEditModal();
+        });
+    }
+  }
+
+  addNewExpense() {
+    const url = 'http://localhost:8080/gastos/cadastrar';
+    const expenseToSave = {
+      ...this.newExpense,
+      grupoGastosId: this.newExpense.grupoGastos.id
+    };
+    this.http.post(url, expenseToSave)
+      .pipe(
+        catchError(error => {
+          console.error('Error adding expense:', error);
+          this.errorMessage = error.error.message || 'Erro ao cadastrar a despesa';
+          this.isErrorModalOpen = true;
+          return throwError(error);
+        })
+      )
+      .subscribe(() => {
+        this.fetchExpenses(this.selectedMonth, this.selectedYear);
+        this.successMessage = 'Despesa cadastrada com sucesso'; 
+        this.isSuccessModalOpen = true;
+        this.closeNewExpenseModal();
+      });
+  }
+
+  addNewGroupExpense() {
+    const url = 'http://localhost:8080/grupo-gastos/cadastrar';
+    this.http.post(url, this.newGroupExpense)
+      .pipe(
+        catchError(error => {
+          console.error('Error adding expense:', error);
+          this.errorMessage = error.error.message || 'Erro ao cadastrar o grupo';
+          this.isErrorModalOpen = true;
+          return throwError(error);
+        })
+      )
+      .subscribe(() => {
+        this.fetchExpenses(this.selectedMonth, this.selectedYear);
+        this.successMessage = 'Grupo cadastrado com sucesso';
+        this.isSuccessModalOpen = true;
+        this.fetchGruposGastos();
+      });
+  }
+
   openEditModal(expense: Expense) {
     this.selectedExpense = { ...expense };
     this.isEditModalOpen = true;
@@ -124,20 +206,33 @@ export class ExpenseManagerComponent implements OnInit {
     this.selectedExpense = null;
   }
 
-  updateExpense() {
-    if (this.selectedExpense) {
-      const url = `http://localhost:8080/gastos/atualizar/${this.selectedExpense.id}`;
-      this.http.put(url, this.selectedExpense)
-        .pipe(
-          catchError(error => {
-            console.error('Error updating expense:', error);
-            return throwError(error);
-          })
-        )
-        .subscribe(() => {
-          this.fetchExpenses(this.selectedMonth, this.selectedYear);
-          this.closeEditModal();
-        });
-    }
+  openNewExpenseModal() {
+    this.isNewExpenseModalOpen = true;
+  }
+
+  closeNewExpenseModal() {
+    this.isNewExpenseModalOpen = false;
+    this.newExpense = { id: 0, nome: '', descricao: '', valor: 0, grupoGastos: {id: 0, nome: ''}, parcela: null, dataInicio: '' };
+  }
+  openNewGroupExpenseModal() {
+    this.isNewGroupExpenseModalOpen = true;
+  }
+
+  closeNewGroupExpenseModal() {
+    this.isNewGroupExpenseModalOpen = false;
+    this.newGroupExpense = { id: 0, nome: '' };
+  }
+
+  closeSuccessModal() {
+    this.isSuccessModalOpen = false;
+  }
+
+  openErrorModal() {
+    this.isErrorModalOpen = true;
+  }
+  
+  closeErrorModal() {
+    this.isErrorModalOpen = false;
+    this.errorMessage = '';
   }
 }
