@@ -11,8 +11,9 @@ interface Expense {
   descricao: string;
   valor: number;
   grupoGastos: GrupoGastos;
-  parcela: string | null;
+  dataFim: string | null;
   dataInicio: string;
+  parcela: string;
 }
 
 interface GroupedExpenses {
@@ -47,7 +48,7 @@ export class ExpenseManagerComponent implements OnInit {
   isNewGroupExpenseModalOpen: boolean = false;
   isSuccessModalOpen: boolean = false;
   isErrorModalOpen: boolean = false;
-  newExpense: Expense = { id: 0, nome: '', descricao: '', valor: 0, grupoGastos: {id : 0, nome: ''}, parcela: null, dataInicio: '' };
+  newExpense: Expense = { id: 0, nome: '', descricao: '', valor: 0, grupoGastos: {id : 0, nome: ''}, dataFim: null, dataInicio: '', parcela: '' };
   newGroupExpense: GrupoGastos = { id: 0, nome: '' };
   errorMessage: string = '';
   successMessage: string = '';
@@ -134,7 +135,8 @@ export class ExpenseManagerComponent implements OnInit {
       const url = `http://localhost:8080/gastos/atualizar/${this.selectedExpense.id}`;
       const expenseToUpdate = {
         ...this.selectedExpense,
-        grupoGastosId: this.selectedExpense.grupoGastos.id
+        grupoGastosId: this.selectedExpense.grupoGastos.id,
+        dataFim: this.selectedExpense.dataFim === "" ? null : this.selectedExpense.dataFim
       };
       this.http.put(url, expenseToUpdate)
         .pipe(
@@ -158,7 +160,8 @@ export class ExpenseManagerComponent implements OnInit {
     const url = 'http://localhost:8080/gastos/cadastrar';
     const expenseToSave = {
       ...this.newExpense,
-      grupoGastosId: this.newExpense.grupoGastos.id
+      grupoGastosId: this.newExpense.grupoGastos.id,
+      dataFim: this.newExpense.dataFim === "0" || this.newExpense.dataFim === "" ? null : this.newExpense.dataFim
     };
     this.http.post(url, expenseToSave)
       .pipe(
@@ -197,7 +200,10 @@ export class ExpenseManagerComponent implements OnInit {
   }
 
   openEditModal(expense: Expense) {
-    this.selectedExpense = { ...expense };
+    this.selectedExpense = { 
+      ...expense, 
+      grupoGastos: this.gruposGastos.find(g => g.id === expense.grupoGastos.id) || { id: 0, nome: '' } 
+    };
     this.isEditModalOpen = true;
   }
 
@@ -212,7 +218,7 @@ export class ExpenseManagerComponent implements OnInit {
 
   closeNewExpenseModal() {
     this.isNewExpenseModalOpen = false;
-    this.newExpense = { id: 0, nome: '', descricao: '', valor: 0, grupoGastos: {id: 0, nome: ''}, parcela: null, dataInicio: '' };
+    this.newExpense = { id: 0, nome: '', descricao: '', valor: 0, grupoGastos: {id: 0, nome: ''}, dataFim: null, dataInicio: '', parcela: '' };
   }
   openNewGroupExpenseModal() {
     this.isNewGroupExpenseModalOpen = true;
